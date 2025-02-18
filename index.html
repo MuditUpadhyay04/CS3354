@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGymBro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-grey: #333333;
+            --light-grey: #4d4d4d;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--primary-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .banner {
+            width: 100%;
+            height: 200px;
+            background: url('/placeholder.svg?height=200&width=800') center center;
+            background-size: cover;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(26,26,26,0.9) 0%, rgba(51,51,51,0.8) 100%);
+        }
+
+        header {
+            background-color: var(--secondary-grey);
+            padding: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .login-btn {
+            background-color: var(--white);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background-color: var(--light-grey);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .content-container {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #quote {
+            font-size: 1.5rem;
+            color: var(--white);
+            margin-bottom: 4rem;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease-in-out;
+            text-align: center;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #quote.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: var(--white);
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: gentlePulse 6s ease-in-out infinite;
+        }
+
+        .mission-section {
+            background: var(--light-grey);
+            padding: 3rem 2rem;
+            margin-top: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .mission-section h2 {
+            color: var(--white);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .mission-text {
+            color: var(--white);
+            line-height: 1.8;
+            font-size: 1.1rem;
+            text-align: justify;
+            padding: 0 1rem;
+        }
+
+        @keyframes gentlePulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.005);
+            }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            background-color: var(--secondary-grey);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .banner {
+                height: 150px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            #quote {
+                font-size: 1.2rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .mission-section {
+                padding: 2rem 1rem;
+            }
+
+            .mission-text {
+                font-size: 1rem;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="login-btn" onclick="location.href='login.html'">Login</button>
+    </header>
+
+    <div class="banner">
+        <div class="banner-overlay"></div>
+    </div>
+
+    <main>
+        <div class="content-container">
+            <p id="quote" class="show">
+                "The only bad workout is the one that didn't happen."
+            </p>
+            <h1>MyGymBro</h1>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">💪</div>
+                    <h3>Personalized Workouts</h3>
+                    <p>Get custom workout plans tailored to your fitness goals.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🥗</div>
+                    <h3>Nutrition Guidance</h3>
+                    <p>Receive expert advice on nutrition to complement your workouts.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏋️</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your fitness journey with our easy-to-use tracking tools.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mission-section">
+            <h2>Our Mission</h2>
+            <p class="mission-text">
+                At MyGymBro, we're committed to being your ultimate fitness companion. Our mission is to empower individuals to achieve their fitness goals through personalized workout plans, expert nutrition guidance, and cutting-edge progress tracking. We strive to make fitness accessible, enjoyable, and rewarding for everyone, regardless of their current fitness level.
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 MyGymBro. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const quotes = [
+            "The only bad workout is the one that didn't happen.",
+            "Strength does not come from the body. It comes from the will.",
+            "Your body can stand almost anything. It's your mind that you have to convince.",
+            "The pain you feel today will be the strength you feel tomorrow.",
+            "Fitness is not about being better than someone else. It's about being better than you used to be."
+        ];
+
+        function updateQuote() {
+            const quoteElement = document.getElementById('quote');
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+
+            quoteElement.classList.remove('show');
+
+            setTimeout(() => {
+                quoteElement.textContent = quotes[randomIndex];
+                quoteElement.classList.add('show');
+            }, 1000);
+        }
+
+        setInterval(updateQuote, 5000);
+    </script>
+</body>
+</html>
+
