@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGymBro - Nutrition Guidance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-grey: #333333;
+            --light-grey: #4d4d4d;
+            --white: #FFFFFF;
+            --accent-green: #4CAF50;
+            --accent-green-dark: #388E3C;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--primary-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--secondary-grey);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background-color: var(--white);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--light-grey);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--white);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .meal-plan-form {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--light-grey);
+            background-color: var(--primary-black);
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-green);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-green-dark);
+            transform: translateY(-2px);
+        }
+
+        .nutrition-content {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .nutrition-section {
+            margin-bottom: 2rem;
+        }
+
+        .nutrition-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .nutrition-section p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .nutrition-tips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .tip-card {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip-card h3 {
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            background-color: var(--secondary-grey);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .meal-plan-form, .nutrition-content {
+                padding: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+            }
+
+            .nutrition-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MyGymBro</div>
+        <button class="logout-btn" onclick="takeHome()">
+            Home
+        </button>
+        
+        <button class="logout-btn" onclick="logoutUser()">
+            Logout
+        </button>
+    </header>
+
+    <main>
+        <h1>Nutrition Guidance</h1>
+
+        <div class="meal-plan-form">
+            <h2 class="form-title">Create Your Custom Meal Plan</h2>
+            <form id="mealPlanForm">
+                <div class="form-group">
+                    <label for="goal">Fitness Goal</label>
+                    <select id="goal" name="goal" required>
+                        <option value="">Select your goal</option>
+                        <option value="weight-loss">Weight Loss</option>
+                        <option value="muscle-gain">Muscle Gain</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="performance">Athletic Performance</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dietary">Dietary Preferences</label>
+                    <select id="dietary" name="dietary" required>
+                        <option value="">Select your preference</option>
+                        <option value="omnivore">Omnivore</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="keto">Keto</option>
+                        <option value="paleo">Paleo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="allergies">Allergies or Restrictions</label>
+                    <input type="text" id="allergies" name="allergies" placeholder="e.g., nuts, dairy, gluten">
+                </div>
+
+                <div class="form-group">
+                    <label for="meals">Number of Meals Per Day</label>
+                    <select id="meals" name="meals" required>
+                        <option value="">Select number of meals</option>
+                        <option value="3">3 meals</option>
+                        <option value="4">4 meals</option>
+                        <option value="5">5 meals</option>
+                        <option value="6">6 meals</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="additional">Additional Information</label>
+                    <textarea id="additional" name="additional" placeholder="Any specific foods you enjoy, meal timing preferences, or other details that would help us create your perfect meal plan."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Generate Meal Plan</button>
+            </form>
+        </div>
+
+        <div class="nutrition-content">
+            <div class="nutrition-section">
+                <h2>Nutrition Fundamentals</h2>
+                <p>Proper nutrition is the foundation of any successful fitness journey. What you eat fuels your workouts, supports recovery, and helps you achieve your fitness goals, whether you're looking to build muscle, lose fat, or improve athletic performance.</p>
+                <p>Our nutrition guidance is based on scientific principles and tailored to your individual needs, preferences, and lifestyle.</p>
+            </div>
+
+            <div class="nutrition-section">
+                <h2>Nutrition Tips</h2>
+                <div class="nutrition-tips">
+                    <div class="tip-card">
+                        <h3>Protein Intake</h3>
+                        <p>Aim for 1.6-2.2g of protein per kg of bodyweight to support muscle recovery and growth.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Hydration</h3>
+                        <p>Drink at least 3-4 liters of water daily to support metabolism and recovery.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Pre-Workout Nutrition</h3>
+                        <p>Consume carbs and protein 1-2 hours before training for optimal performance.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Post-Workout Nutrition</h3>
+                        <p>Eat a meal with protein and carbs within 30-60 minutes after your workout.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 MyGymBro. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function takeHome(){
+            location.href = 'main.html';
+        }
+
+        function logoutUser() {
+            alert('You have been successfully logged out');
+            location.href = 'index.html';
+        }
+
+        document.getElementById('mealPlanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Here you would typically send the form data to a server
+            // For now, we'll just show an alert
+            alert('Your custom meal plan request has been submitted! Our nutrition experts will create your plan shortly.');
+            
+            // Optionally reset the form
+            this.reset();
+        });
+    </script>
+</body>
+</html>
+
