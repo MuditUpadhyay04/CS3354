@@ -28,6 +28,10 @@ def main():
 def Nutrition_Guidance():
     return render_template('Nutrition_Guidance.html')
 
+@app.route('/workout.html')
+def Workout():
+    return render_template('workout.html')
+
     
 if __name__ == "__main__":
     app.run(debug=True)
