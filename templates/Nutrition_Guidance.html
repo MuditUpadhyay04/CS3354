@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGymBro - Nutrition Guidance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-grey: #333333;
+            --light-grey: #4d4d4d;
+            --white: #FFFFFF;
+            --accent-green: #4CAF50;
+            --accent-green-dark: #388E3C;
+            --success-green: #2ecc71;
+            --error-red: #e74c3c;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--primary-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--secondary-grey);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background-color: var(--white);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--light-grey);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--white);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .meal-plan-form {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--light-grey);
+            background-color: var(--primary-black);
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-green);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-green-dark);
+            transform: translateY(-2px);
+        }
+
+        .result-message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .success {
+            background-color: var(--success-green);
+            color: var(--white);
+        }
+
+        .error {
+            background-color: var(--error-red);
+            color: var(--white);
+        }
+
+        .nutrition-content {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .nutrition-section {
+            margin-bottom: 2rem;
+        }
+
+        .nutrition-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .nutrition-section p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .nutrition-tips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .tip-card {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip-card h3 {
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .tab-container {
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .tab-button {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--light-grey);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .tab-button:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .tab-button.active {
+            background-color: var(--accent-green);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .summary-section {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .summary-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .summary-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .summary-label {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .diet-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .diet-card {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .diet-card h3 {
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .meal-plan-result {
+            background: var(--light-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            display: none;
+            width: 100%;
+        }
+
+        .meal-plan-result h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+            text-align: center;
+        }
+
+        .meal-plan-content {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent-green);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            background-color: var(--secondary-grey);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .meal-plan-form, .nutrition-content {
+                padding: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+            }
+
+            .nutrition-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                border-radius: 0;
+            }
+
+            .tab-button:first-child {
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                border-bottom-left-radius: 0;
+            }
+
+            .tab-button:last-child {
+                border-bottom-left-radius: 8px;
+                border-bottom-right-radius: 8px;
+                border-top-right-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MyGymBro</div>
+        <button class="logout-btn" onclick="location.href='index-kK9bvFS1KgwdGeWncEWLfmyx50VeJl.html'">Logout</button>
+    </header>
+
+    <main>
+        <h1>Nutrition Guidance</h1>
+
+        <div class="meal-plan-form">
+            <h2 class="form-title">Create Your Custom Meal Plan</h2>
+            
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="openTab(event, 'standardForm')">Standard Form</button>
+                    <button class="tab-button" onclick="openTab(event, 'testingForm')">Testing Form</button>
+                </div>
+                
+                <div id="standardForm" class="tab-content active">
+                    <form id="nutritionFormStandard">
+                        <div class="form-group">
+                            <label for="dietPlan">Diet Plan</label>
+                            <select id="dietPlan" name="dietPlan" required>
+                                <option value="">Select a diet plan</option>
+                                <optgroup label="Bulking Plans (2500-4000 calories)">
+                                    <option value="Keto(B)">Keto (Bulking)</option>
+                                    <option value="Paleo(B)">Paleo (Bulking)</option>
+                                    <option value="Vegan(B)">Vegan (Bulking)</option>
+                                    <option value="Carnivore(B)">Carnivore (Bulking)</option>
+                                    <option value="Mediterranean(B)">Mediterranean (Bulking)</option>
+                                </optgroup>
+                                <optgroup label="Cutting Plans (1000-2500 calories)">
+                                    <option value="Keto(C)">Keto (Cutting)</option>
+                                    <option value="Paleo(C)">Paleo (Cutting)</option>
+                                    <option value="Vegan(C)">Vegan (Cutting)</option>
+                                    <option value="Carnivore(C)">Carnivore (Cutting)</option>
+                                    <option value="Mediterranean(C)">Mediterranean (Cutting)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="calories">Daily Calorie Target</label>
+                            <input type="number" id="calories" name="calories" placeholder="Enter your daily calorie target" required>
+                            <p id="calorieHelp" style="margin-top: 0.5rem; font-size: 0.9rem; color: #ccc;">Bulking plans require 2500-4000 calories. Cutting plans require 1000-2500 calories.</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="allergies">Allergies or Restrictions</label>
+                            <input type="text" id="allergies" name="allergies" placeholder="e.g., nuts, dairy, gluten">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="meals">Number of Meals Per Day</label>
+                            <select id="meals" name="meals" required>
+                                <option value="">Select number of meals</option>
+                                <option value="3">3 meals</option>
+                                <option value="4">4 meals</option>
+                                <option value="5">5 meals</option>
+                                <option value="6">6 meals</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="additional">Additional Information</label>
+                            <textarea id="additional" name="additional" placeholder="Any specific foods you enjoy, meal timing preferences, or other details that would help us create your perfect meal plan."></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Generate Meal Plan</button>
+                    </form>
+                </div>
+                
+                <div id="testingForm" class="tab-content">
+                    <form id="nutritionFormTesting">
+                        <div class="form-group">
+                            <label for="dietPlanText">Enter Diet Plan</label>
+                            <input type="text" id="dietPlanText" name="dietPlanText" placeholder="e.g., Keto(B), Vegan(C)">
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #ccc;">Valid diet plans: Keto(B), Paleo(B), Vegan(B), Carnivore(B), Mediterranean(B), Keto(C), Paleo(C), Vegan(C), Carnivore(C), Mediterranean(C)</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="caloriesText">Enter Calories</label>
+                            <input type="text" id="caloriesText" name="caloriesText" placeholder="e.g., 2500">
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #ccc;">Bulking plans (B) require 2500-4000 calories. Cutting plans (C) require 1000-2500 calories.</p>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Test Nutrition Plan</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="resultMessage" class="result-message"></div>
+            
+            <div id="summarySection" class="summary-section">
+                <h3 class="summary-title">Nutrition Plan Summary</h3>
+                <div class="summary-item">
+                    <span class="summary-label">Diet Plan:</span>
+                    <span id="summaryDietPlan"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Calories:</span>
+                    <span id="summaryCalories"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Result:</span>
+                    <span id="summaryResult"></span>
+                </div>
+            </div>
+            
+            <div id="loadingSection" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Generating your personalized meal plan...</p>
+            </div>
+            
+            <div id="mealPlanResult" class="meal-plan-result">
+                <h3>Your Personalized Meal Plan</h3>
+                <div id="mealPlanContent" class="meal-plan-content"></div>
+            </div>
+        </div>
+
+        <div class="nutrition-content">
+            <div class="nutrition-section">
+                <h2>Nutrition Fundamentals</h2>
+                <p>Proper nutrition is the foundation of any successful fitness journey. What you eat fuels your workouts, supports recovery, and helps you achieve your fitness goals, whether you're looking to build muscle, lose fat, or improve athletic performance.</p>
+                <p>Our nutrition guidance is based on scientific principles and tailored to your individual needs, preferences, and lifestyle.</p>
+            </div>
+
+            <div class="nutrition-section">
+                <h2>Diet Plans</h2>
+                <div class="diet-info">
+                    <div class="diet-card">
+                        <h3>Keto</h3>
+                        <p>A high-fat, low-carb diet that forces your body to burn fats rather than carbohydrates. Effective for weight loss and may improve certain health markers.</p>
+                    </div>
+                    <div class="diet-card">
+                        <h3>Paleo</h3>
+                        <p>Based on foods similar to what might have been eaten during the Paleolithic era. Focuses on whole foods, lean proteins, fruits, vegetables, and healthy fats.</p>
+                    </div>
+                    <div class="diet-card">
+                        <h3>Vegan</h3>
+                        <p>Excludes all animal products. Can be nutritionally complete with proper planning, focusing on plant proteins, whole grains, fruits, vegetables, and healthy fats.</p>
+                    </div>
+                    <div class="diet-card">
+                        <h3>Carnivore</h3>
+                        <p>Consists primarily of animal products with minimal or no plant foods. High in protein and fat, with virtually no carbohydrates.</p>
+                    </div>
+                    <div class="diet-card">
+                        <h3>Mediterranean</h3>
+                        <p>Based on traditional foods from countries bordering the Mediterranean Sea. Rich in vegetables, fruits, whole grains, beans, nuts, and olive oil.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nutrition-section">
+                <h2>Nutrition Tips</h2>
+                <div class="nutrition-tips">
+                    <div class="tip-card">
+                        <h3>Protein Intake</h3>
+                        <p>Aim for 1.6-2.2g of protein per kg of bodyweight to support muscle recovery and growth.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Hydration</h3>
+                        <p>Drink at least 3-4 liters of water daily to support metabolism and recovery.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Pre-Workout Nutrition</h3>
+                        <p>Consume carbs and protein 1-2 hours before training for optimal performance.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h3>Post-Workout Nutrition</h3>
+                        <p>Eat a meal with protein and carbs within 30-60 minutes after your workout.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 MyGymBro. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // List of valid diet plans (matching the Java code)
+        const validDietPlans = [
+            "Keto(B)", "Paleo(B)", "Vegan(B)", "Carnivore(B)", "Mediterranean(B)",
+            "Keto(C)", "Paleo(C)", "Vegan(C)", "Carnivore(C)", "Mediterranean(C)"
+        ];
+
+        // Function to track nutrition (matching the Java logic)
+        function trackNutrition(dietPlan, calories) {
+            if (!dietPlan || dietPlan === "") {
+                return "Diet plan cannot be null or empty.";
+            }
+
+            if (!validDietPlans.includes(dietPlan)) {
+                return "Invalid diet plan. Please choose from: " + JSON.stringify(validDietPlans);
+            }
+
+            if (calories === null || calories === undefined) {
+                return "Calories cannot be null.";
+            }
+
+            try {
+                const calorieInt = parseInt(calories);
+                
+                if (isNaN(calorieInt)) {
+                    return "Invalid calorie input. Please enter a valid integer.";
+                }
+
+                if (dietPlan.includes("(B)")) {
+                    if (calorieInt < 2500 || calorieInt > 4000) {
+                        return "Invalid calorie range for bulking. Please enter a value between 2500-4000.";
+                    }
+                } else if (dietPlan.includes("(C)")) {
+                    if (calorieInt < 1000 || calorieInt > 2500) {
+                        return "Invalid calorie range for cutting. Please enter a value between 1000-2500.";
+                    }
+                }
+
+                return "Nutrition tracked successfully!";
+            } catch (e) {
+                return "Invalid calorie input. Please enter a valid integer.";
+            }
+        }
+
+        // Function to open tabs
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+
+            // Show the current tab and add active class to the button
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Function to update summary section
+        function updateSummary(dietPlan, calories, result) {
+            document.getElementById("summaryDietPlan").textContent = dietPlan;
+            document.getElementById("summaryCalories").textContent = calories;
+            document.getElementById("summaryResult").textContent = result;
+            document.getElementById("summarySection").style.display = "block";
+        }
+        
+        // Function to generate a meal plan using AI
+        async function generateMealPlan(userData) {
+            // Show loading indicator
+            document.getElementById("loadingSection").style.display = "block";
+            
+            try {
+                // In a real implementation, you would make an API call to a server endpoint
+                // that would then call the OpenAI API or another AI service
+                
+                // For demonstration purposes, we'll simulate an API call with a timeout
+                // and return a pre-defined meal plan based on the diet type
+                
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Extract diet type (Keto, Paleo, etc.) without the (B) or (C) suffix
+                const dietType = userData.dietPlan.split('(')[0];
+                const goalType = userData.dietPlan.includes('(B)') ? 'bulking' : 'cutting';
+                const calories = userData.calories;
+                const meals = userData.meals || 3;
+                const allergies = userData.allergies || 'None';
+                const additional = userData.additional || 'None';
+                
+                // Generate prompt for AI
+                const prompt = `
+                    Create a detailed ${meals}-meal ${dietType} diet plan for ${goalType} with a daily target of ${calories} calories.
+                    Allergies/Restrictions: ${allergies}
+                    Additional preferences: ${additional}
+                    
+                    Please include:
+                    1. Specific meals with ingredients and approximate portion sizes
+                    2. Approximate macronutrient breakdown for each meal
+                    3. Timing recommendations for each meal
+                    4. A shopping list for the ingredients
+                `;
+                
+                // In a real implementation, you would send this prompt to an AI API
+                // const response = await fetch('/api/generate-meal-plan', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ prompt })
+                // });
+                // const data = await response.json();
+                // return data.mealPlan;
+                
+                // For demonstration, return a sample meal plan based on diet type
+                return generateSampleMealPlan(dietType, goalType, calories, meals, allergies);
+                
+            } catch (error) {
+                console.error('Error generating meal plan:', error);
+                return "Sorry, there was an error generating your meal plan. Please try again later.";
+            } finally {
+                // Hide loading indicator
+                document.getElementById("loadingSection").style.display = "none";
+            }
+        }
+        
+        // Function to generate a sample meal plan based on diet type
+        function generateSampleMealPlan(dietType, goalType, calories, meals, allergies) {
+            // This is a simplified example - in a real implementation, this would come from the AI API
+            
+            let mealPlan = `# ${dietType} ${goalType.toUpperCase()} MEAL PLAN\n`;
+            mealPlan += `Daily Calorie Target: ${calories} calories\n`;
+            mealPlan += `Number of Meals: ${meals}\n`;
+            if (allergies !== 'None') {
+                mealPlan += `Allergies/Restrictions: ${allergies}\n`;
+            }
+            mealPlan += `\n---\n\n`;
+            
+            if (dietType === 'Keto') {
+                mealPlan += `## MEAL PLAN OVERVIEW\n`;
+                mealPlan += `This keto meal plan focuses on high fat, moderate protein, and very low carbohydrate foods to keep your body in ketosis. The macronutrient ratio is approximately 70-75% fat, 20-25% protein, and 5-10% carbohydrates.\n\n`;
+                
+                for (let i = 1; i <= meals; i++) {
+                    mealPlan += `## MEAL ${i}\n\n`;
+                    
+                    if (i === 1) {
+                        mealPlan += `### Breakfast (7:00 AM)\n`;
+                        mealPlan += `- Avocado and Bacon Omelette\n`;
+                        mealPlan += `  * 3 eggs\n`;
+                        mealPlan += `  * 1/2 avocado, sliced\n`;
+                        mealPlan += `  * 2 strips of bacon, cooked and crumbled\n`;
+                        mealPlan += `  * 1 oz cheddar cheese\n`;
+                        mealPlan += `  * 1 tbsp butter for cooking\n\n`;
+                        mealPlan += `**Macros:** 550 calories | 45g fat | 30g protein | 5g carbs\n\n`;
+                    } else if (i === 2) {
+                        mealPlan += `### Lunch (12:00 PM)\n`;
+                        mealPlan += `- Grilled Chicken Salad with Olive Oil Dressing\n`;
+                        mealPlan += `  * 6 oz grilled chicken breast\n`;
+                        mealPlan += `  * 2 cups mixed greens\n`;
+                        mealPlan += `  * 1/4 cup sliced cucumber\n`;
+                        mealPlan += `  * 10 cherry tomatoes\n`;
+                        mealPlan += `  * 1/4 cup sliced bell peppers\n`;
+                        mealPlan += `  * 2 tbsp olive oil\n`;
+                        mealPlan += `  * 1 tbsp apple cider vinegar\n`;
+                        mealPlan += `  * 1 oz feta cheese\n`;
+                        mealPlan += `  * 10 olives\n\n`;
+                        mealPlan += `**Macros:** 650 calories | 48g fat | 45g protein | 8g carbs\n\n`;
+                    } else if (i === 3) {
+                        mealPlan += `### Dinner (6:00 PM)\n`;
+                        mealPlan += `- Baked Salmon with Asparagus\n`;
+                        mealPlan += `  * 8 oz salmon fillet\n`;
+                        mealPlan += `  * 1 tbsp butter\n`;
+                        mealPlan += `  * 1 clove garlic, minced\n`;
+                        mealPlan += `  * 1 tbsp fresh lemon juice\n`;
+                        mealPlan += `  * 1 cup asparagus\n`;
+                        mealPlan += `  * 1 tbsp olive oil\n`;
+                        mealPlan += `  * Salt and pepper to taste\n\n`;
+                        mealPlan += `**Macros:** 600 calories | 42g fat | 50g protein | 4g carbs\n\n`;
+                    } else if (i === 4) {
+                        mealPlan += `### Snack (3:00 PM)\n`;
+                        mealPlan += `- Keto Fat Bombs\n`;
+                        mealPlan += `  * 2 tbsp coconut oil\n`;
+                        mealPlan += `  * 2 tbsp almond butter\n`;
+                        mealPlan += `  * 1 tbsp cocoa powder\n`;
+                        mealPlan += `  * 1 tsp erythritol or stevia\n`;
+                        mealPlan += `  * 1 oz macadamia nuts\n\n`;
+                        mealPlan += `**Macros:** 400 calories | 38g fat | 8g protein | 3g carbs\n\n`;
+                    } else if (i === 5) {
+                        mealPlan += `### Pre-Workout Snack (5:00 PM)\n`;
+                        mealPlan += `- Cheese and Pepperoni\n`;
+                        mealPlan += `  * 2 oz cheddar cheese\n`;
+                        mealPlan += `  * 1 oz pepperoni slices\n`;
+                        mealPlan += `  * 5 olives\n\n`;
+                        mealPlan += `**Macros:** 300 calories | 25g fat | 15g protein | 2g carbs\n\n`;
+                    } else if (i === 6) {
+                        mealPlan += `### Post-Workout Shake (8:00 PM)\n`;
+                        mealPlan += `- Keto Protein Shake\n`;
+                        mealPlan += `  * 1 scoop low-carb protein powder\n`;
+                        mealPlan += `  * 1 cup unsweetened almond milk\n`;
+                        mealPlan += `  * 1 tbsp MCT oil\n`;
+                        mealPlan += `  * 1 tbsp heavy cream\n`;
+                        mealPlan += `  * 1/4 avocado\n`;
+                        mealPlan += `  * Ice cubes\n\n`;
+                        mealPlan += `**Macros:** 350 calories | 28g fat | 20g protein | 3g carbs\n\n`;
+                    }
+                }
+            } else if (dietType === 'Vegan') {
+                mealPlan += `## MEAL PLAN OVERVIEW\n`;
+                mealPlan += `This vegan meal plan focuses on plant-based proteins, healthy fats, and complex carbohydrates to support your ${goalType} goals while maintaining a completely plant-based diet.\n\n`;
+                
+                for (let i = 1; i <= meals; i++) {
+                    mealPlan += `## MEAL ${i}\n\n`;
+                    
+                    if (i === 1) {
+                        mealPlan += `### Breakfast (7:00 AM)\n`;
+                        mealPlan += `- Protein-Packed Oatmeal Bowl\n`;
+                        mealPlan += `  * 1 cup rolled oats\n`;
+                        mealPlan += `  * 1 scoop vegan protein powder\n`;
+                        mealPlan += `  * 1 tbsp chia seeds\n`;
+                        mealPlan += `  * 1 tbsp almond butter\n`;
+                        mealPlan += `  * 1/2 banana, sliced\n`;
+                        mealPlan += `  * 1/4 cup berries\n`;
+                        mealPlan += `  * 1 cup unsweetened almond milk\n\n`;
+                        mealPlan += `**Macros:** 500 calories | 15g fat | 30g protein | 65g carbs\n\n`;
+                    } else if (i === 2) {
+                        mealPlan += `### Lunch (12:00 PM)\n`;
+                        mealPlan += `- Quinoa and Tempeh Bowl\n`;
+                        mealPlan += `  * 1 cup cooked quinoa\n`;
+                        mealPlan += `  * 6 oz tempeh, marinated and grilled\n`;
+                        mealPlan += `  * 1 cup roasted vegetables (broccoli, bell peppers, zucchini)\n`;
+                        mealPlan += `  * 1/4 avocado\n`;
+                        mealPlan += `  * 2 tbsp tahini dressing\n`;
+                        mealPlan += `  * 1 tbsp nutritional yeast\n`;
+                        mealPlan += `  * Fresh herbs and lemon juice\n\n`;
+                        mealPlan += `**Macros:** 650 calories | 25g fat | 35g protein | 70g carbs\n\n`;
+                    } else if (i === 3) {
+                        mealPlan += `### Dinner (6:00 PM)\n`;
+                        mealPlan += `- Lentil and Vegetable Curry with Brown Rice\n`;
+                        mealPlan += `  * 1 cup cooked brown rice\n`;
+                        mealPlan += `  * 1 cup cooked lentils\n`;
+                        mealPlan += `  * 1 cup mixed vegetables (cauliflower, peas, carrots)\n`;
+                        mealPlan += `  * 1/2 cup coconut milk\n`;
+                        mealPlan += `  * 2 tbsp curry paste\n`;
+                        mealPlan += `  * 1 tbsp olive oil\n`;
+                        mealPlan += `  * Spices: turmeric, cumin, coriander\n\n`;
+                        mealPlan += `**Macros:** 600 calories | 18g fat | 25g protein | 85g carbs\n\n`;
+                    }
+                }
+            }
+            
+            mealPlan += `## SHOPPING LIST\n\n`;
+            mealPlan += `### Proteins\n`;
+            if (dietType === 'Keto') {
+                mealPlan += `- Eggs\n- Bacon\n- Chicken breast\n- Salmon\n- Cheese (cheddar, feta)\n- Pepperoni\n- Low-carb protein powder\n`;
+            } else if (dietType === 'Vegan') {
+                mealPlan += `- Tempeh\n- Lentils\n- Vegan protein powder\n- Chia seeds\n- Quinoa\n- Nutritional yeast\n`;
+            }
+            
+            mealPlan += `\n### Vegetables\n`;
+            if (dietType === 'Keto') {
+                mealPlan += `- Mixed greens\n- Cucumber\n- Cherry tomatoes\n- Bell peppers\n- Asparagus\n- Olives\n`;
+            } else if (dietType === 'Vegan') {
+                mealPlan += `- Broccoli\n- Bell peppers\n- Zucchini\n- Cauliflower\n- Peas\n- Carrots\n`;
+            }
+            
+            mealPlan += `\n### Fats\n`;
+            if (dietType === 'Keto') {
+                mealPlan += `- Avocado\n- Butter\n- Olive oil\n- Coconut oil\n- Almond butter\n- MCT oil\n- Heavy cream\n`;
+            } else if (dietType === 'Vegan') {
+                mealPlan += `- Avocado\n- Olive oil\n- Almond butter\n- Tahini\n- Coconut milk\n`;
+            }
+            
+            mealPlan += `\n### Other\n`;
+            if (dietType === 'Keto') {
+                mealPlan += `- Almond milk (unsweetened)\n- Cocoa powder\n- Erythritol or stevia\n- Macadamia nuts\n- Garlic\n- Lemon\n- Salt and pepper\n`;
+            } else if (dietType === 'Vegan') {
+                mealPlan += `- Rolled oats\n- Almond milk (unsweetened)\n- Banana\n- Berries\n- Brown rice\n- Curry paste\n- Spices (turmeric, cumin, coriander)\n- Fresh herbs\n- Lemon\n`;
+            }
+            
+            return mealPlan;
+        }
+
+        // Standard form submission handler
+        document.getElementById('nutritionFormStandard').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const selectedDietPlan = document.getElementById('dietPlan').value;
+            const calories = document.getElementById('calories').value;
+            const allergies = document.getElementById('allergies').value;
+            const meals = document.getElementById('meals').value;
+            const additional = document.getElementById('additional').value;
+            
+            // Track nutrition and get result message
+            const result = trackNutrition(selectedDietPlan, calories);
+            
+            // Display result message
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = result;
+            resultMessage.style.display = 'block';
+            
+            if (result === "Nutrition tracked successfully!") {
+                resultMessage.className = 'result-message success';
+                
+                // Collect user data for meal plan generation
+                const userData = {
+                    dietPlan: selectedDietPlan,
+                    calories: calories,
+                    allergies: allergies,
+                    meals: meals,
+                    additional: additional
+                };
+                
+                // Generate meal plan
+                const mealPlan = await generateMealPlan(userData);
+                
+                // Display meal plan
+                document.getElementById('mealPlanContent').textContent = mealPlan;
+                document.getElementById('mealPlanResult').style.display = 'block';
+                
+            } else {
+                resultMessage.className = 'result-message error';
+                // Hide meal plan if validation failed
+                document.getElementById('mealPlanResult').style.display = 'none';
+            }
+            
+            // Update summary section
+            updateSummary(selectedDietPlan, calories, result);
+        });
+
+        // Testing form submission handler
+        document.getElementById('nutritionFormTesting').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dietPlan = document.getElementById('dietPlanText').value;
+            const calories = document.getElementById('caloriesText').value;
+            
+            // Track nutrition and get result message
+            const result = trackNutrition(dietPlan, calories === "" ? null : calories);
+            
+            // Display result message
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = result;
+            resultMessage.style.display = 'block';
+            
+            if (result === "Nutrition tracked successfully!") {
+                resultMessage.className = 'result-message success';
+                
+                // Collect user data for meal plan generation
+                const userData = {
+                    dietPlan: dietPlan,
+                    calories: calories,
+                    allergies: "",
+                    meals: 3,
+                    additional: ""
+                };
+                
+                // Generate meal plan
+                const mealPlan = await generateMealPlan(userData);
+                
+                // Display meal plan
+                document.getElementById('mealPlanContent').textContent = mealPlan;
+                document.getElementById('mealPlanResult').style.display = 'block';
+                
+            } else {
+                resultMessage.className = 'result-message error';
+                // Hide meal plan if validation failed
+                document.getElementById('mealPlanResult').style.display = 'none';
+            }
+            
+            // Update summary section
+            updateSummary(dietPlan, calories, result);
+        });
+
+        // Update calorie help text based on selected diet plan
+        document.getElementById('dietPlan').addEventListener('change', function() {
+            const selectedPlan = this.value;
+            const calorieHelp = document.getElementById('calorieHelp');
+            
+            if (selectedPlan.includes('(B)')) {
+                calorieHelp.textContent = 'Bulking plans require 2500-4000 calories.';
+            } else if (selectedPlan.includes('(C)')) {
+                calorieHelp.textContent = 'Cutting plans require 1000-2500 calories.';
+            } else {
+                calorieHelp.textContent = 'Bulking plans require 2500-4000 calories. Cutting plans require 1000-2500 calories.';
+            }
+        });
+    </script>
+</body>
+</html>
+

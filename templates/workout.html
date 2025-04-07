@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGymBro - Workout Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-grey: #333333;
+            --light-grey: #4d4d4d;
+            --white: #FFFFFF;
+            --accent-blue: #3498db;
+            --accent-blue-dark: #2980b9;
+            --success-green: #2ecc71;
+            --error-red: #e74c3c;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--primary-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--secondary-grey);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background-color: var(--white);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--light-grey);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--white);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .workout-form {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        select, input[type="text"], textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--light-grey);
+            background-color: var(--primary-black);
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .exercise-section {
+            margin-top: 2rem;
+        }
+
+        .muscle-group {
+            margin-bottom: 1.5rem;
+            background: var(--light-grey);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .muscle-group-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .exercise-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .exercise-option {
+            display: flex;
+            align-items: center;
+        }
+
+        .exercise-option input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-blue);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            margin-top: 2rem;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-blue-dark);
+            transform: translateY(-2px);
+        }
+
+        .result-message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .success {
+            background-color: var(--success-green);
+            color: var(--white);
+        }
+
+        .error {
+            background-color: var(--error-red);
+            color: var(--white);
+        }
+
+        .workout-info {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .workout-section {
+            margin-bottom: 2rem;
+        }
+
+        .workout-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .workout-section p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .split-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .split-card {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .split-card h3 {
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .tab-container {
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .tab-button {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--light-grey);
+            color: var(--white);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .tab-button:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .tab-button.active {
+            background-color: var(--accent-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .summary-section {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .summary-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .summary-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .summary-label {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        footer {
+            background-color: var(--secondary-grey);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .workout-form, .workout-info {
+                padding: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+            }
+
+            .workout-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .exercise-options {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                border-radius: 0;
+            }
+
+            .tab-button:first-child {
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                border-bottom-left-radius: 0;
+            }
+
+            .tab-button:last-child {
+                border-bottom-left-radius: 8px;
+                border-bottom-right-radius: 8px;
+                border-top-right-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MyGymBro</div>
+        <button class="logout-btn" onclick="takeHome()">
+            Home
+        </button>
+        
+        <button class="logout-btn" onclick="logoutUser()">
+            Logout
+        </button>
+    </header>
+
+    <main>
+        <h1>Create Your Workout Plan</h1>
+
+        <div class="workout-form">
+            <h2 class="form-title">Design Your Custom Workout</h2>
+            
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="openTab(event, 'standardForm')">Standard Form</button>
+                    <button class="tab-button" onclick="openTab(event, 'testingForm')">Customize</button>
+                </div>
+                
+                <div id="standardForm" class="tab-content active">
+                    <form id="workoutFormStandard">
+                        <div class="form-group">
+                            <label for="split">Choose Your Split</label>
+                            <select id="split" name="split" required>
+                                <option value="">Select a workout split</option>
+                                <option value="Push/Pull/Legs">Push/Pull/Legs</option>
+                                <option value="Bro">Bro Split</option>
+                                <option value="Upper/Lower">Upper/Lower</option>
+                            </select>
+                        </div>
+
+                        <div class="exercise-section">
+                            <h3>Select Your Exercises</h3>
+                            
+                            <div class="muscle-group">
+                                <h4 class="muscle-group-title">Chest</h4>
+                                <div class="exercise-options">
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="bench-press" name="exercises" value="Bench Press">
+                                        <label for="bench-press">Bench Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="incline-bench" name="exercises" value="Incline Bench Press">
+                                        <label for="incline-bench">Incline Bench Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="decline-bench" name="exercises" value="Decline Bench Press">
+                                        <label for="decline-bench">Decline Bench Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="dumbbell-flyes" name="exercises" value="Dumbbell Flyes">
+                                        <label for="dumbbell-flyes">Dumbbell Flyes</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="cable-flyes" name="exercises" value="Cable Flyes">
+                                        <label for="cable-flyes">Cable Flyes</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="dips" name="exercises" value="Dips">
+                                        <label for="dips">Dips</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="muscle-group">
+                                <h4 class="muscle-group-title">Biceps</h4>
+                                <div class="exercise-options">
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="bicep-curl" name="exercises" value="Bicep Curl">
+                                        <label for="bicep-curl">Bicep Curl</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="hammer-curl" name="exercises" value="Hammer Curl">
+                                        <label for="hammer-curl">Hammer Curl</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="concentration-curl" name="exercises" value="Concentration Curl">
+                                        <label for="concentration-curl">Concentration Curl</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="cable-curl" name="exercises" value="Cable Curl">
+                                        <label for="cable-curl">Cable Curl</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="preacher-curl" name="exercises" value="Preacher Curl">
+                                        <label for="preacher-curl">Preacher Curl</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="chin-ups" name="exercises" value="Chin-Ups">
+                                        <label for="chin-ups">Chin-Ups</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="muscle-group">
+                                <h4 class="muscle-group-title">Triceps</h4>
+                                <div class="exercise-options">
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="triceps-extension" name="exercises" value="Triceps Extension">
+                                        <label for="triceps-extension">Triceps Extension</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="close-grip-bench" name="exercises" value="Close-Grip Bench Press">
+                                        <label for="close-grip-bench">Close-Grip Bench Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="overhead-triceps" name="exercises" value="Overhead Triceps Extension">
+                                        <label for="overhead-triceps">Overhead Triceps Extension</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="cable-pushdown" name="exercises" value="Cable Pushdown">
+                                        <label for="cable-pushdown">Cable Pushdown</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="skullcrusher" name="exercises" value="Skullcrusher">
+                                        <label for="skullcrusher">Skullcrusher</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="diamond-pushups" name="exercises" value="Diamond Push-Ups">
+                                        <label for="diamond-pushups">Diamond Push-Ups</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="muscle-group">
+                                <h4 class="muscle-group-title">Back</h4>
+                                <div class="exercise-options">
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="pull-up" name="exercises" value="Pull-Up">
+                                        <label for="pull-up">Pull-Up</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="lat-pulldown" name="exercises" value="Lat Pulldown">
+                                        <label for="lat-pulldown">Lat Pulldown</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="barbell-row" name="exercises" value="Barbell Row">
+                                        <label for="barbell-row">Barbell Row</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="dumbbell-row" name="exercises" value="Dumbbell Row">
+                                        <label for="dumbbell-row">Dumbbell Row</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="cable-row" name="exercises" value="Cable Row">
+                                        <label for="cable-row">Cable Row</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="seated-cable-row" name="exercises" value="Seated Cable Row">
+                                        <label for="seated-cable-row">Seated Cable Row</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="muscle-group">
+                                <h4 class="muscle-group-title">Shoulders</h4>
+                                <div class="exercise-options">
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="overhead-press" name="exercises" value="Overhead Press">
+                                        <label for="overhead-press">Overhead Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="lateral-raise" name="exercises" value="Lateral Raise">
+                                        <label for="lateral-raise">Lateral Raise</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="front-raise" name="exercises" value="Front Raise">
+                                        <label for="front-raise">Front Raise</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="rear-delt-fly" name="exercises" value="Rear Delt Fly">
+                                        <label for="rear-delt-fly">Rear Delt Fly</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="arnold-press" name="exercises" value="Arnold Press">
+                                        <label for="arnold-press">Arnold Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="shrugs" name="exercises" value="Shrugs">
+                                        <label for="shrugs">Shrugs</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="muscle-group">
+                                <h4 class="muscle-group-title">Legs</h4>
+                                <div class="exercise-options">
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="squat" name="exercises" value="Squat">
+                                        <label for="squat">Squat</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="leg-press" name="exercises" value="Leg Press">
+                                        <label for="leg-press">Leg Press</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="leg-extension" name="exercises" value="Leg Extension">
+                                        <label for="leg-extension">Leg Extension</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="hamstring-curl" name="exercises" value="Hamstring Curl">
+                                        <label for="hamstring-curl">Hamstring Curl</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="calf-raise" name="exercises" value="Calf Raise">
+                                        <label for="calf-raise">Calf Raise</label>
+                                    </div>
+                                    <div class="exercise-option">
+                                        <input type="checkbox" id="lunge" name="exercises" value="Lunge">
+                                        <label for="lunge">Lunge</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Create Workout Plan</button>
+                    </form>
+                </div>
+                
+                <div id="testingForm" class="tab-content">
+                    <form id="workoutFormTesting">
+                        <div class="form-group">
+                            <label for="splitText">Enter Workout Split</label>
+                            <input type="text" id="splitText" name="splitText" placeholder="e.g., Push/Pull/Legs, Bro, Upper/Lower">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="exercisesText">Enter Exercises (comma-separated)</label>
+                            <textarea id="exercisesText" name="exercisesText" placeholder="e.g., Bench Press, Bicep Curl, Squat"></textarea>
+                            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #ccc;">Valid exercises include: Bench Press, Incline Bench Press, Decline Bench Press, Dumbbell Flyes, Cable Flyes, Dips, Bicep Curl, Hammer Curl, Concentration Curl, Cable Curl, Preacher Curl, Chin-Ups, Triceps Extension, Close-Grip Bench Press, Overhead Triceps Extension, Cable Pushdown, Skullcrusher, Diamond Push-Ups, Pull-Up, Lat Pulldown, Barbell Row, Dumbbell Row, Cable Row, Seated Cable Row, Overhead Press, Lateral Raise, Front Raise, Rear Delt Fly, Arnold Press, Shrugs, Squat, Leg Press, Leg Extension, Hamstring Curl, Calf Raise, Lunge</p>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Test Workout Plan</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="resultMessage" class="result-message"></div>
+            
+            <div id="summarySection" class="summary-section">
+                <h3 class="summary-title">Workout Plan Summary</h3>
+                <div class="summary-item">
+                    <span class="summary-label">Split:</span>
+                    <span id="summarySplit"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Exercises:</span>
+                    <ul id="summaryExercises"></ul>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Result:</span>
+                    <span id="summaryResult"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="workout-info">
+            <div class="workout-section">
+                <h2>Workout Split Types</h2>
+                <p>Choosing the right workout split is crucial for achieving your fitness goals. Here's information about the different splits available:</p>
+                
+                <div class="split-info">
+                    <div class="split-card">
+                        <h3>Push/Pull/Legs</h3>
+                        <p>This split divides workouts by movement pattern: pushing exercises (chest, shoulders, triceps), pulling exercises (back, biceps), and leg exercises. Ideal for 3-6 workouts per week.</p>
+                    </div>
+                    <div class="split-card">
+                        <h3>Bro Split</h3>
+                        <p>Focuses on one muscle group per workout (e.g., chest day, back day, leg day). Best for those who can train 5-6 days per week and want to maximize volume for each muscle group.</p>
+                    </div>
+                    <div class="split-card">
+                        <h3>Upper/Lower</h3>
+                        <p>Alternates between upper body and lower body workouts. Great for those who can train 4 days per week and want balanced development with adequate recovery time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 MyGymBro. All rights reserved.</p>
+    </footer>
+
+    <script>
+         function takeHome(){
+            location.href = 'main.html';
+        }
+
+        function logoutUser() {
+            alert('You have been successfully logged out');
+            location.href = 'index.html';
+        }
+        
+        // List of valid splits and exercises (matching the Java code)
+        const validSplits = ["Push/Pull/Legs", "Bro", "Upper/Lower"];
+        const validExercises = [
+            // Chest
+            "Bench Press", "Incline Bench Press", "Decline Bench Press", "Dumbbell Flyes", "Cable Flyes", "Dips",
+            // Biceps
+            "Bicep Curl", "Hammer Curl", "Concentration Curl", "Cable Curl", "Preacher Curl", "Chin-Ups",
+            // Triceps
+            "Triceps Extension", "Close-Grip Bench Press", "Overhead Triceps Extension", "Cable Pushdown", "Skullcrusher", "Diamond Push-Ups",
+            // Back
+            "Pull-Up", "Lat Pulldown", "Barbell Row", "Dumbbell Row", "Cable Row", "Seated Cable Row",
+            // Shoulders
+            "Overhead Press", "Lateral Raise", "Front Raise", "Rear Delt Fly", "Arnold Press", "Shrugs",
+            // Legs
+            "Squat", "Leg Press", "Leg Extension", "Hamstring Curl", "Calf Raise", "Lunge"
+        ];
+
+        // Function to create workout plan (matching the Java logic)
+        function createWorkoutPlan(selectedSplit, selectedExercises) {
+            if (!selectedSplit || selectedSplit === "") {
+                return "Split cannot be null or empty.";
+            }
+
+            if (!validSplits.includes(selectedSplit)) {
+                return "Invalid split. Please choose from: " + JSON.stringify(validSplits);
+            }
+
+            if (!selectedExercises || selectedExercises.length === 0) {
+                return "Exercises cannot be null or empty.";
+            }
+
+            for (const exercise of selectedExercises) {
+                if (!validExercises.includes(exercise)) {
+                    return "Invalid exercise(s) detected. Please choose valid exercises.";
+                }
+            }
+
+            return "Workout plan created successfully!";
+        }
+
+        // Function to open tabs
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+
+            // Show the current tab and add active class to the button
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Function to update summary section
+        function updateSummary(split, exercises, result) {
+            document.getElementById("summarySplit").textContent = split;
+            
+            const exercisesList = document.getElementById("summaryExercises");
+            exercisesList.innerHTML = "";
+            exercises.forEach(exercise => {
+                const li = document.createElement("li");
+                li.textContent = exercise;
+                exercisesList.appendChild(li);
+            });
+            
+            document.getElementById("summaryResult").textContent = result;
+            document.getElementById("summarySection").style.display = "block";
+        }
+
+        // Standard form submission handler
+        document.getElementById('workoutFormStandard').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedSplit = document.getElementById('split').value;
+            
+            // Get all checked exercise checkboxes
+            const exerciseCheckboxes = document.querySelectorAll('input[name="exercises"]:checked');
+            const selectedExercises = Array.from(exerciseCheckboxes).map(checkbox => checkbox.value);
+            
+            // Create workout plan and get result message
+            const result = createWorkoutPlan(selectedSplit, selectedExercises);
+            
+            // Display result message
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = result;
+            resultMessage.style.display = 'block';
+            
+            if (result === "Workout plan created successfully!") {
+                resultMessage.className = 'result-message success';
+            } else {
+                resultMessage.className = 'result-message error';
+            }
+            
+            // Update summary section
+            updateSummary(selectedSplit, selectedExercises, result);
+        });
+
+        // Testing form submission handler
+        document.getElementById('workoutFormTesting').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedSplit = document.getElementById('splitText').value;
+            
+            // Parse comma-separated exercises
+            let selectedExercises = [];
+            const exercisesText = document.getElementById('exercisesText').value;
+            if (exercisesText) {
+                selectedExercises = exercisesText.split(',').map(exercise => exercise.trim());
+            }
+            
+            // Create workout plan and get result message
+            const result = createWorkoutPlan(selectedSplit, selectedExercises);
+            
+            // Display result message
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = result;
+            resultMessage.style.display = 'block';
+            
+            if (result === "Workout plan created successfully!") {
+                resultMessage.className = 'result-message success';
+            } else {
+                resultMessage.className = 'result-message error';
+            }
+            
+            // Update summary section
+            updateSummary(selectedSplit, selectedExercises, result);
+        });
+    </script>
+</body>
+</html>
+
