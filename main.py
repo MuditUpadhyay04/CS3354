@@ -32,6 +32,11 @@ def Nutrition_Guidance():
 def Workout():
     return render_template('workout.html')
 
+@app.route('/progresstracker.html')
+def Progresstracker():
+    return render_template('progresstracker.html')
+
+
     
 if __name__ == "__main__":
     app.run(debug=True)
