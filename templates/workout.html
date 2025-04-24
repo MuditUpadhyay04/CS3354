@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyGymBro - Workout Plan</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         * {
             margin: 0;
@@ -307,6 +311,47 @@
             text-align: center;
             padding: 1.5rem;
             margin-top: 2rem;
+        }
+
+        /* Workout History Styles */
+        .workout-history {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .workout-history h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+        
+        .history-item {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .history-date {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-details {
+            margin-top: 1rem;
+        }
+        
+        .no-history {
+            text-align: center;
+            padding: 2rem;
+            color: #ccc;
         }
 
         @media (max-width: 768px) {
@@ -613,6 +658,14 @@
             </div>
         </div>
 
+        <!-- Workout History Section -->
+        <div class="workout-history" id="workoutHistory">
+            <h2>Your Workout History</h2>
+            <div id="historyContent">
+                <div class="no-history">No workout history found. Create your first workout plan!</div>
+            </div>
+        </div>
+
         <div class="workout-info">
             <div class="workout-section">
                 <h2>Workout Split Types</h2>
@@ -640,14 +693,104 @@
         <p>&copy; 2023 MyGymBro. All rights reserved.</p>
     </footer>
 
+    <!-- Firebase Config Script -->
     <script>
-         function takeHome(){
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoxhhGHGu_FIbuTJ9UNxpsKofSd7HOdp8",
+            authDomain: "mygymbro-3f8d2.firebaseapp.com",
+            projectId: "mygymbro-3f8d2",
+            storageBucket: "mygymbro-3f8d2.firebasestorage.app",
+            messagingSenderId: "789900020245",
+            appId: "1:789900020245:web:62701b5a125ce167af5c1c",
+            measurementId: "G-WMEHFGH34L",
+        };
+
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Get current user
+        function getCurrentUser() {
+            return new Promise((resolve, reject) => {
+                const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                    unsubscribe();
+                    resolve(user);
+                }, reject);
+            });
+        }
+
+        // Save data to Firestore
+        async function saveToFirestore(collection, data) {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error("No user logged in");
+                    return { success: false, error: "No user logged in" };
+                }
+
+                // Add user ID to the data
+                const dataWithUser = {
+                    ...data,
+                    userId: user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                };
+
+                // Add document to collection
+                const docRef = await db.collection(collection).add(dataWithUser);
+                console.log("Document written with ID: ", docRef.id);
+                return { success: true, docId: docRef.id };
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Get user data from Firestore
+        async function getUserData(collection) {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error("No user logged in");
+                    return { success: false, error: "No user logged in" };
+                }
+
+                // Query documents for current user
+                const snapshot = await db.collection(collection)
+                    .where("userId", "==", user.uid)
+                    .orderBy("createdAt", "desc")
+                    .get();
+
+                const data = [];
+                snapshot.forEach((doc) => {
+                    data.push({
+                        id: doc.id,
+                        ...doc.data(),
+                    });
+                });
+
+                return { success: true, data };
+            } catch (error) {
+                console.error("Error getting documents: ", error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        function takeHome(){
             location.href = 'main.html';
         }
 
         function logoutUser() {
-            alert('You have been successfully logged out');
-            location.href = 'index.html';
+            firebase.auth().signOut().then(() => {
+                alert('You have been successfully logged out');
+                location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Error signing out: ", error);
+            });
         }
         
         // List of valid splits and exercises (matching the Java code)
@@ -725,8 +868,8 @@
             document.getElementById("summarySection").style.display = "block";
         }
 
-        // Standard form submission handler
-        document.getElementById('workoutFormStandard').addEventListener('submit', function(e) {
+        // Standard form submission handler with Firebase
+        document.getElementById('workoutFormStandard').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const selectedSplit = document.getElementById('split').value;
@@ -745,6 +888,22 @@
             
             if (result === "Workout plan created successfully!") {
                 resultMessage.className = 'result-message success';
+                
+                // Save to Firebase
+                const workoutData = {
+                    split: selectedSplit,
+                    exercises: selectedExercises,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const saveResult = await saveToFirestore('workouts', workoutData);
+                if (saveResult.success) {
+                    console.log("Workout saved successfully!");
+                    // Refresh workout history
+                    loadWorkoutHistory();
+                } else {
+                    console.error("Error saving workout:", saveResult.error);
+                }
             } else {
                 resultMessage.className = 'result-message error';
             }
@@ -753,8 +912,8 @@
             updateSummary(selectedSplit, selectedExercises, result);
         });
 
-        // Testing form submission handler
-        document.getElementById('workoutFormTesting').addEventListener('submit', function(e) {
+        // Testing form submission handler with Firebase
+        document.getElementById('workoutFormTesting').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const selectedSplit = document.getElementById('splitText').value;
@@ -776,6 +935,22 @@
             
             if (result === "Workout plan created successfully!") {
                 resultMessage.className = 'result-message success';
+                
+                // Save to Firebase
+                const workoutData = {
+                    split: selectedSplit,
+                    exercises: selectedExercises,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const saveResult = await saveToFirestore('workouts', workoutData);
+                if (saveResult.success) {
+                    console.log("Workout saved successfully!");
+                    // Refresh workout history
+                    loadWorkoutHistory();
+                } else {
+                    console.error("Error saving workout:", saveResult.error);
+                }
             } else {
                 resultMessage.className = 'result-message error';
             }
@@ -783,7 +958,58 @@
             // Update summary section
             updateSummary(selectedSplit, selectedExercises, result);
         });
+        
+        // Function to load workout history
+        async function loadWorkoutHistory() {
+            const historyContent = document.getElementById('historyContent');
+            
+            const result = await getUserData('workouts');
+            if (result.success && result.data.length > 0) {
+                let historyHTML = '';
+                
+                result.data.forEach(workout => {
+                    const date = workout.createdAt && workout.createdAt.toDate ? 
+                        new Date(workout.createdAt.toDate()).toLocaleString() : 
+                        workout.createdAt ? new Date(workout.createdAt).toLocaleString() : 
+                        'Unknown date';
+                    
+                    historyHTML += `
+                        <div class="history-item">
+                            <div class="history-date">${date}</div>
+                            <div><strong>Split:</strong> ${workout.split}</div>
+                            <div class="history-details">
+                                <strong>Exercises:</strong>
+                                <ul>
+                                    ${workout.exercises.map(ex => `<li>${ex}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                historyContent.innerHTML = historyHTML;
+            } else {
+                historyContent.innerHTML = '<div class="no-history">No workout history found. Create your first workout plan!</div>';
+            }
+        }
+        
+        // Check authentication and load workout history on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const user = await getCurrentUser();
+                if (user) {
+                    console.log("User is logged in:", user.email);
+                    loadWorkoutHistory();
+                } else {
+                    console.log("No user logged in, redirecting to login");
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+                alert("Authentication error. Please try logging in again.");
+                window.location.href = 'login.html';
+            }
+        });
     </script>
 </body>
 </html>
-
