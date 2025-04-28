@@ -1,0 +1,38 @@
+<div class="meal-plan-form">
+  <h2 class="form-title">Progress Tracker</h2>
+  <form id="progressForm">
+    <div class="form-group">
+      <label for="progressDate">Date</label>
+      <input type="date" id="progressDate" name="progressDate" required />
+    </div>
+
+    <div class="form-group">
+      <label for="weight">Weight (kg)</label>
+      <input
+        type="number"
+        id="weight"
+        name="weight"
+        placeholder="Enter current weight"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="caloriesConsumed">Calories Consumed</label>
+      <input
+        type="number"
+        id="caloriesConsumed"
+        name="caloriesConsumed"
+        placeholder="e.g., 2200"
+      />
+    </div>
+
+    <button type="submit" class="submit-btn">Log Progress</button>
+  </form>
+  <div id="progressResults" class="summary-section" style="display: none">
+    <h3 class="summary-title">Logged Entry</h3>
+    <p><strong>Date:</strong> <span id="loggedDate"></span></p>
+    <p><strong>Weight:</strong> <span id="loggedWeight"></span> kg</p>
+    <p><strong>Calories:</strong> <span id="loggedCalories"></span></p>
+  </div>
+</div>

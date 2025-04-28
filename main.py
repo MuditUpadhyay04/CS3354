@@ -30,6 +30,7 @@ def workout():
 @app.route('/progress_tracking.html')
 def progress_tracking():
     return render_template('progress_tracking.html')
+
     
 if __name__ == "__main__":
     app.run(debug=True)
