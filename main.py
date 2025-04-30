@@ -1,12 +1,7 @@
-from flask import Flask, render_template, jsonify, request
-import subprocess
+from flask import Flask, render_template, jsonify, request, url_for
 import os
 
 app = Flask(__name__)
-
-# Load dataset
-# file_path = "data1.csv"
-# data = pd.read_csv(file_path)
 
 @app.route('/')
 def home():
@@ -25,17 +20,16 @@ def main():
     return render_template('main.html')
 
 @app.route('/Nutrition_Guidance.html')
-def Nutrition_Guidance():
-    return render_template('Nutrition_Guidance.html')
+def nutrition_guidance():
+    return render_template('nutrition_guidance.html')
 
 @app.route('/workout.html')
-def Workout():
+def workout():
     return render_template('workout.html')
 
-@app.route('/progresstracker.html')
-def Progresstracker():
-    return render_template('progresstracker.html')
-
+@app.route('/progress_tracking.html')
+def progress_tracking():
+    return render_template('progress_tracking.html')
 
     
 if __name__ == "__main__":

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGymBro - Progress Tracking</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-grey: #333333;
+            --light-grey: #4d4d4d;
+            --white: #FFFFFF;
+            --accent-purple: #8e44ad;
+            --accent-purple-dark: #7d3c98;
+            --success-green: #2ecc71;
+            --error-red: #e74c3c;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--primary-black);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--secondary-grey);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background-color: var(--white);
+            color: var(--primary-black);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--light-grey);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--white);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-form {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: 1px solid var(--light-grey);
+            background-color: var(--primary-black);
+            color: var(--white);
+            font-size: 1rem;
+        }
+
+        .submit-btn {
+            background-color: var(--accent-purple);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-purple-dark);
+            transform: translateY(-2px);
+        }
+
+        .result-message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .success {
+            background-color: var(--success-green);
+            color: var(--white);
+        }
+
+        .error {
+            background-color: var(--error-red);
+            color: var(--white);
+        }
+
+        .progress-history {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .progress-history h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--white);
+        }
+
+        .history-item {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .history-date {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 2rem;
+            color: #ccc;
+        }
+
+        .progress-chart {
+            width: 100%;
+            height: 300px;
+            margin-top: 2rem;
+            background: var(--light-grey);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        footer {
+            background-color: var(--secondary-grey);
+            color: var(--white);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .progress-form, .progress-history {
+                padding: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">MyGymBro</div>
+        <button class="logout-btn" onclick="location.href='main.html'">Home</button>
+        <button class="logout-btn" onclick="logoutUser()">Logout</button>
+    </header>
+
+    <main>
+        <h1>Track Your Progress</h1>
+
+        <div class="progress-form">
+            <h2 class="form-title">Record Your Progress</h2>
+            
+            <form id="progressForm">
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+                    <input type="number" id="weight" name="weight" step="0.1" required placeholder="Enter your current weight">
+                </div>
+
+                <div class="form-group">
+                    <label for="bodyFat">Body Fat % (optional)</label>
+                    <input type="number" id="bodyFat" name="bodyFat" step="0.1" placeholder="Enter your body fat percentage">
+                </div>
+
+                <div class="form-group">
+                    <label for="measurements">Measurements (optional)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <input type="number" id="chest" name="chest" placeholder="Chest (cm)">
+                        <input type="number" id="waist" name="waist" placeholder="Waist (cm)">
+                        <input type="number" id="hips" name="hips" placeholder="Hips (cm)">
+                        <input type="number" id="arms" name="arms" placeholder="Arms (cm)">
+                        <input type="number" id="thighs" name="thighs" placeholder="Thighs (cm)">
+                        <input type="number" id="calves" name="calves" placeholder="Calves (cm)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <input type="text" id="notes" name="notes" placeholder="Any additional notes about your progress">
+                </div>
+
+                <button type="submit" class="submit-btn">Save Progress</button>
+            </form>
+            
+            <div id="resultMessage" class="result-message"></div>
+        </div>
+
+        <div class="progress-history">
+            <h2>Your Progress History</h2>
+            
+            <div id="historyContent">
+                <div class="no-history">No progress history found. Start tracking your progress!</div>
+            </div>
+            
+            <div class="progress-chart" id="weightChart">
+                <!-- Weight chart will be rendered here -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 MyGymBro. All rights reserved.</p>
+    </footer>
+
+    <!-- Chart.js for visualizing progress -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoxhhGHGu_FIbuTJ9UNxpsKofSd7HOdp8",
+            authDomain: "mygymbro-3f8d2.firebaseapp.com",
+            projectId: "mygymbro-3f8d2",
+            storageBucket: "mygymbro-3f8d2.firebasestorage.app",
+            messagingSenderId: "789900020245",
+            appId: "1:789900020245:web:62701b5a125ce167af5c1c",
+            measurementId: "G-WMEHFGH34L",
+        };
+
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Get current user
+        function getCurrentUser() {
+            return new Promise((resolve, reject) => {
+                const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                    unsubscribe();
+                    resolve(user);
+                }, reject);
+            });
+        }
+
+        // Save data to Firestore
+        async function saveToFirestore(collection, data) {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error("No user logged in");
+                    return { success: false, error: "No user logged in" };
+                }
+
+                // Add user ID to the data
+                const dataWithUser = {
+                    ...data,
+                    userId: user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                };
+
+                // Add document to collection
+                const docRef = await db.collection(collection).add(dataWithUser);
+                console.log("Document written with ID: ", docRef.id);
+                return { success: true, docId: docRef.id };
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Get user data from Firestore
+        async function getUserData(collection) {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error("No user logged in");
+                    return { success: false, error: "No user logged in" };
+                }
+
+                // Query documents for current user
+                const snapshot = await db.collection(collection)
+                    .where("userId", "==", user.uid)
+                    .orderBy("createdAt", "desc")
+                    .get();
+
+                const data = [];
+                snapshot.forEach((doc) => {
+                    data.push({
+                        id: doc.id,
+                        ...doc.data(),
+                    });
+                });
+
+                return { success: true, data };
+            } catch (error) {
+                console.error("Error getting documents: ", error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        function logoutUser() {
+            firebase.auth().signOut().then(() => {
+                alert('You have been successfully logged out');
+                location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Error signing out: ", error);
+            });
+        }
+
+        // Set default date to today
+        document.getElementById('date').valueAsDate = new Date();
+        
+        // Progress form submission handler
+        document.getElementById('progressForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const date = document.getElementById('date').value;
+            const weight = document.getElementById('weight').value;
+            const bodyFat = document.getElementById('bodyFat').value || null;
+            const chest = document.getElementById('chest').value || null;
+            const waist = document.getElementById('waist').value || null;
+            const hips = document.getElementById('hips').value || null;
+            const arms = document.getElementById('arms').value || null;
+            const thighs = document.getElementById('thighs').value || null;
+            const calves = document.getElementById('calves').value || null;
+            const notes = document.getElementById('notes').value || null;
+            
+            // Validate data
+            if (!date || !weight) {
+                showResultMessage("Please enter at least the date and weight.", false);
+                return;
+            }
+            
+            // Create progress data object
+            const progressData = {
+                date,
+                weight: parseFloat(weight),
+                bodyFat: bodyFat ? parseFloat(bodyFat) : null,
+                measurements: {
+                    chest: chest ? parseFloat(chest) : null,
+                    waist: waist ? parseFloat(waist) : null,
+                    hips: hips ? parseFloat(hips) : null,
+                    arms: arms ? parseFloat(arms) : null,
+                    thighs: thighs ? parseFloat(thighs) : null,
+                    calves: calves ? parseFloat(calves) : null
+                },
+                notes
+            };
+            
+            // Save to Firebase
+            try {
+                const saveResult = await saveToFirestore('progress', progressData);
+                if (saveResult.success) {
+                    showResultMessage("Progress saved successfully!", true);
+                    // Reset form
+                    document.getElementById('progressForm').reset();
+                    document.getElementById('date').valueAsDate = new Date();
+                    // Refresh progress history
+                    loadProgressHistory();
+                } else {
+                    showResultMessage("Error saving progress: " + saveResult.error, false);
+                }
+            } catch (error) {
+                showResultMessage("Error: " + error.message, false);
+            }
+        });
+        
+        // Function to show result message
+        function showResultMessage(message, isSuccess) {
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = message;
+            resultMessage.className = isSuccess ? 'result-message success' : 'result-message error';
+            resultMessage.style.display = 'block';
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                resultMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Function to load progress history
+        async function loadProgressHistory() {
+            const historyContent = document.getElementById('historyContent');
+            
+            try {
+                const result = await getUserData('progress');
+                if (result.success && result.data && result.data.length > 0) {
+                    // Sort data by date
+                    const sortedData = result.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    let historyHTML = '';
+                    
+                    sortedData.forEach(progress => {
+                        const date = new Date(progress.date).toLocaleDateString();
+                        
+                        historyHTML += `
+                            <div class="history-item">
+                                <div class="history-date">${date}</div>
+                                <div><strong>Weight:</strong> ${progress.weight} kg</div>
+                                ${progress.bodyFat ? `<div><strong>Body Fat:</strong> ${progress.bodyFat}%</div>` : ''}
+                                
+                                ${hasMeasurements(progress.measurements) ? `
+                                    <div style="margin-top: 0.5rem;"><strong>Measurements:</strong></div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                                        ${progress.measurements.chest ? `<div>Chest: ${progress.measurements.chest} cm</div>` : ''}
+                                        ${progress.measurements.waist ? `<div>Waist: ${progress.measurements.waist} cm</div>` : ''}
+                                        ${progress.measurements.hips ? `<div>Hips: ${progress.measurements.hips} cm</div>` : ''}
+                                        ${progress.measurements.arms ? `<div>Arms: ${progress.measurements.arms} cm</div>` : ''}
+                                        ${progress.measurements.thighs ? `<div>Thighs: ${progress.measurements.thighs} cm</div>` : ''}
+                                        ${progress.measurements.calves ? `<div>Calves: ${progress.measurements.calves} cm</div>` : ''}
+                                    </div>
+                                ` : ''}
+                                
+                                ${progress.notes ? `<div style="margin-top: 0.5rem;"><strong>Notes:</strong> ${progress.notes}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    historyContent.innerHTML = historyHTML;
+                    
+                    // Create weight chart
+                    createWeightChart(sortedData);
+                } else {
+                    historyContent.innerHTML = '<div class="no-history">No progress history found. Start tracking your progress!</div>';
+                    // Clear chart
+                    document.getElementById('weightChart').innerHTML = '';
+                }
+            } catch (error) {
+                console.error("Error loading progress history:", error);
+                historyContent.innerHTML = '<div class="no-history">Error loading progress history. Please try again later.</div>';
+                document.getElementById('weightChart').innerHTML = '';
+            }
+        }
+        
+        // Helper function to check if any measurements exist
+        function hasMeasurements(measurements) {
+            if (!measurements) return false;
+            return Object.values(measurements).some(value => value !== null);
+        }
+        
+        // Function to create weight chart
+        function createWeightChart(data) {
+            try {
+                const chartContainer = document.getElementById('weightChart');
+                chartContainer.innerHTML = '<canvas id="weightChartCanvas"></canvas>';
+                
+                const ctx = document.getElementById('weightChartCanvas').getContext('2d');
+                
+                // Extract dates and weights
+                const dates = data.map(item => new Date(item.date).toLocaleDateString());
+                const weights = data.map(item => item.weight);
+                const bodyFats = data.map(item => item.bodyFat);
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: 'Weight (kg)',
+                                data: weights,
+                                borderColor: '#8e44ad',
+                                backgroundColor: 'rgba(142, 68, 173, 0.1)',
+                                tension: 0.1,
+                                fill: true
+                            },
+                            {
+                                label: 'Body Fat (%)',
+                                data: bodyFats,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                tension: 0.1,
+                                fill: true,
+                                hidden: !bodyFats.some(bf => bf !== null)
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#FFFFFF'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#FFFFFF'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#FFFFFF'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error creating chart:", error);
+                document.getElementById('weightChart').innerHTML = '<div style="text-align: center; padding: 2rem; color: #ccc;">Error creating chart. Please try again later.</div>';
+            }
+        }
+        
+        // Check authentication and load progress history on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const user = await getCurrentUser();
+                if (user) {
+                    console.log("User is logged in:", user.email);
+                    loadProgressHistory();
+                } else {
+                    console.log("No user logged in, redirecting to login");
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        });
+    </script>
+</body>
+</html>

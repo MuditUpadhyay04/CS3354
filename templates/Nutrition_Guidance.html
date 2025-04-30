@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyGymBro - Nutrition Guidance</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         * {
             margin: 0;
@@ -329,6 +333,47 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Nutrition History Styles */
+        .nutrition-history {
+            background: var(--secondary-grey);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .nutrition-history h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+        
+        .history-item {
+            background: var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .history-date {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-details {
+            margin-top: 1rem;
+        }
+        
+        .no-history {
+            text-align: center;
+            padding: 2rem;
+            color: #ccc;
+        }
+
         footer {
             background-color: var(--secondary-grey);
             color: var(--white);
@@ -379,7 +424,8 @@
 <body>
     <header>
         <div class="logo">MyGymBro</div>
-        <button class="logout-btn" onclick="location.href='index-kK9bvFS1KgwdGeWncEWLfmyx50VeJl.html'">Logout</button>
+        <button class="logout-btn" onclick="location.href='main.html'">Home</button>
+        <button class="logout-btn" onclick="logoutUser()">Logout</button>
     </header>
 
     <main>
@@ -496,6 +542,14 @@
             </div>
         </div>
 
+        <!-- Nutrition History Section -->
+        <div class="nutrition-history" id="nutritionHistory">
+            <h2>Your Nutrition History</h2>
+            <div id="historyContent">
+                <div class="no-history">No nutrition history found. Create your first meal plan!</div>
+            </div>
+        </div>
+
         <div class="nutrition-content">
             <div class="nutrition-section">
                 <h2>Nutrition Fundamentals</h2>
@@ -557,7 +611,102 @@
         <p>&copy; 2023 MyGymBro. All rights reserved.</p>
     </footer>
 
+    <!-- Firebase Config Script -->
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoxhhGHGu_FIbuTJ9UNxpsKofSd7HOdp8",
+            authDomain: "mygymbro-3f8d2.firebaseapp.com",
+            projectId: "mygymbro-3f8d2",
+            storageBucket: "mygymbro-3f8d2.firebasestorage.app",
+            messagingSenderId: "789900020245",
+            appId: "1:789900020245:web:62701b5a125ce167af5c1c",
+            measurementId: "G-WMEHFGH34L",
+        };
+
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Get current user
+        function getCurrentUser() {
+            return new Promise((resolve, reject) => {
+                const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                    unsubscribe();
+                    resolve(user);
+                }, reject);
+            });
+        }
+
+        // Save data to Firestore
+        async function saveToFirestore(collection, data) {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error("No user logged in");
+                    return { success: false, error: "No user logged in" };
+                }
+
+                // Add user ID to the data
+                const dataWithUser = {
+                    ...data,
+                    userId: user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                };
+
+                // Add document to collection
+                const docRef = await db.collection(collection).add(dataWithUser);
+                console.log("Document written with ID: ", docRef.id);
+                return { success: true, docId: docRef.id };
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Get user data from Firestore
+        async function getUserData(collection) {
+            try {
+                const user = await getCurrentUser();
+                if (!user) {
+                    console.error("No user logged in");
+                    return { success: false, error: "No user logged in" };
+                }
+
+                // Query documents for current user
+                const snapshot = await db.collection(collection)
+                    .where("userId", "==", user.uid)
+                    .orderBy("createdAt", "desc")
+                    .get();
+
+                const data = [];
+                snapshot.forEach((doc) => {
+                    data.push({
+                        id: doc.id,
+                        ...doc.data(),
+                    });
+                });
+
+                return { success: true, data };
+            } catch (error) {
+                console.error("Error getting documents: ", error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        function logoutUser() {
+            firebase.auth().signOut().then(() => {
+                alert('You have been successfully logged out');
+                location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Error signing out: ", error);
+            });
+        }
+        
         // List of valid diet plans (matching the Java code)
         const validDietPlans = [
             "Keto(B)", "Paleo(B)", "Vegan(B)", "Carnivore(B)", "Mediterranean(B)",
@@ -841,7 +990,7 @@
             return mealPlan;
         }
 
-        // Standard form submission handler
+        // Modified standard form submission handler to save to Firebase
         document.getElementById('nutritionFormStandard').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -871,12 +1020,27 @@
                     additional: additional
                 };
                 
-                // Generate meal plan
-                const mealPlan = await generateMealPlan(userData);
+                // Save to Firebase
+                const saveResult = await saveToFirestore('nutrition', userData);
+                if (saveResult.success) {
+                    console.log("Nutrition plan saved successfully!");
+                    // Refresh nutrition history
+                    loadNutritionHistory();
+                } else {
+                    console.error("Error saving nutrition plan:", saveResult.error);
+                }
                 
-                // Display meal plan
-                document.getElementById('mealPlanContent').textContent = mealPlan;
-                document.getElementById('mealPlanResult').style.display = 'block';
+                // Generate meal plan
+                try {
+                    const mealPlan = await generateMealPlan(userData);
+                    
+                    // Display meal plan
+                    document.getElementById('mealPlanContent').textContent = mealPlan;
+                    document.getElementById('mealPlanResult').style.display = 'block';
+                } catch (error) {
+                    console.error("Error generating meal plan:", error);
+                    showResultMessage("Error generating meal plan. Please try again.", false);
+                }
                 
             } else {
                 resultMessage.className = 'result-message error';
@@ -888,7 +1052,7 @@
             updateSummary(selectedDietPlan, calories, result);
         });
 
-        // Testing form submission handler
+        // Testing form submission handler with Firebase
         document.getElementById('nutritionFormTesting').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -915,12 +1079,27 @@
                     additional: ""
                 };
                 
-                // Generate meal plan
-                const mealPlan = await generateMealPlan(userData);
+                // Save to Firebase
+                const saveResult = await saveToFirestore('nutrition', userData);
+                if (saveResult.success) {
+                    console.log("Nutrition plan saved successfully!");
+                    // Refresh nutrition history
+                    loadNutritionHistory();
+                } else {
+                    console.error("Error saving nutrition plan:", saveResult.error);
+                }
                 
-                // Display meal plan
-                document.getElementById('mealPlanContent').textContent = mealPlan;
-                document.getElementById('mealPlanResult').style.display = 'block';
+                // Generate meal plan
+                try {
+                    const mealPlan = await generateMealPlan(userData);
+                    
+                    // Display meal plan
+                    document.getElementById('mealPlanContent').textContent = mealPlan;
+                    document.getElementById('mealPlanResult').style.display = 'block';
+                } catch (error) {
+                    console.error("Error generating meal plan:", error);
+                    showResultMessage("Error generating meal plan. Please try again.", false);
+                }
                 
             } else {
                 resultMessage.className = 'result-message error';
@@ -931,6 +1110,37 @@
             // Update summary section
             updateSummary(dietPlan, calories, result);
         });
+        
+        // Function to load nutrition history
+        async function loadNutritionHistory() {
+            const historyContent = document.getElementById('historyContent');
+            
+            const result = await getUserData('nutrition');
+            if (result.success && result.data.length > 0) {
+                let historyHTML = '';
+                
+                result.data.forEach(nutrition => {
+                    const date = nutrition.createdAt && nutrition.createdAt.toDate ? 
+                        new Date(nutrition.createdAt.toDate()).toLocaleString() : 
+                        nutrition.createdAt ? new Date(nutrition.createdAt).toLocaleString() : 
+                        'Unknown date';
+                    
+                    historyHTML += `
+                        <div class="history-item">
+                            <div class="history-date">${date}</div>
+                            <div><strong>Diet Plan:</strong> ${nutrition.dietPlan}</div>
+                            <div><strong>Calories:</strong> ${nutrition.calories}</div>
+                            ${nutrition.allergies ? `<div><strong>Allergies:</strong> ${nutrition.allergies}</div>` : ''}
+                            ${nutrition.meals ? `<div><strong>Meals per day:</strong> ${nutrition.meals}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                historyContent.innerHTML = historyHTML;
+            } else {
+                historyContent.innerHTML = '<div class="no-history">No nutrition history found. Create your first meal plan!</div>';
+            }
+        }
 
         // Update calorie help text based on selected diet plan
         document.getElementById('dietPlan').addEventListener('change', function() {
@@ -945,7 +1155,35 @@
                 calorieHelp.textContent = 'Bulking plans require 2500-4000 calories. Cutting plans require 1000-2500 calories.';
             }
         });
+
+        // Function to show result message
+        function showResultMessage(message, isSuccess) {
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.textContent = message;
+            resultMessage.className = isSuccess ? 'result-message success' : 'result-message error';
+            resultMessage.style.display = 'block';
+            
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                resultMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Check authentication and load nutrition history on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const user = await getCurrentUser();
+                if (user) {
+                    console.log("User is logged in:", user.email);
+                    loadNutritionHistory();
+                } else {
+                    console.log("No user logged in, redirecting to login");
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        });
     </script>
 </body>
 </html>
-
